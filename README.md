@@ -124,7 +124,7 @@ If you must define a different world space origin from camera0, you can uncommen
 You can also replace ```R_W0``` and ```T_W0``` to any rotation and translation for camera0. This step is easier than you think. 
 
 Finally, two additional extrinsic files will be created, with respect to a world origin:
-```world_to_camera0_rot_trans.dat``` and ```world_to_camera1_rot_trans.dat```. These paired with the intrinsic parameters can also be used. In this case, the 3D triangulated points will be with respect to the coordinate space defined by the calibration pattern. 
+```world_to_camera0_rot_trans.dat``` and ```world_to_camera1_rot_trans.dat```. These paired with the intrinsic parameters can also be used for triangulation. In this case, the 3D triangulated points will be with respect to the coordinate space defined by the calibration pattern. 
 
 **Bonus**
 
