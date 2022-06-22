@@ -107,7 +107,7 @@ R and T alone are not enough to triangulate a 3D point. We need to define a worl
 
 Thus, the world origin to camera0 rotation is identity matrix and translation is a zeros vector. Then R, T obtained from previous step becomes rotation and translation from world origin to camera1. Practically what this means is that your 3D triangulated points will be with respect to the coordinate systemn sitting behind your camera0 lens, as shown above. 
 
-Step5 code will do all of this and save ```camera0_rot_trans.dat``` and ```camera1_rot_trans.dat``` in ```camera_parameters``` folder. This completes stereo calibration. You get intrinsic and extrinsic parameters for both cameras. If you want to see how to use these to obtain 3D triangulation, please check my other repositories (i.e bodypose3d).
+Step5 code will do all of this and save ```camera0_rot_trans.dat``` and ```camera1_rot_trans.dat``` in ```camera_parameters``` folder. This completes stereo calibration. You get intrinsic and extrinsic parameters for both cameras. If you want to see how to use these to obtain 3D triangulation, please check my other repositories (i.e [bodypose3d](https://github.com/TemugeB/bodypose3d)).
 
 As final step, Step5 shows coordinate axes shifted 60cm forward in both camera views. Since I know that the axes are shifted 60cm forward, I can check it using a tape set to 60cm. You can see that both cameras are in good alignment. This is however not a good way to check your calibration. You should try to aim for RMSE < 0.5.
 
