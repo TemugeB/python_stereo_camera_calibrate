@@ -574,8 +574,8 @@ if __name__ == '__main__':
 
 
     """Step1. Save calibration frames for single cameras"""
-    #save_frames_single_camera('camera0') #save frames for camera0
-    #save_frames_single_camera('camera1') #save frames for camera1
+    save_frames_single_camera('camera0') #save frames for camera0
+    save_frames_single_camera('camera1') #save frames for camera1
 
 
     """Step2. Obtain camera intrinsic matrices and save them"""
@@ -590,7 +590,7 @@ if __name__ == '__main__':
 
 
     """Step3. Save calibration frames for both cameras simultaneously"""
-    #save_frames_two_cams('camera0', 'camera1') #save simultaneous frames
+    save_frames_two_cams('camera0', 'camera1') #save simultaneous frames
 
 
     """Step4. Use paired calibration pattern frames to obtain camera0 to camera1 rotation and translation"""
