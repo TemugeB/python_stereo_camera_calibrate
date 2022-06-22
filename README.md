@@ -12,7 +12,7 @@ Clone the repository to your PC. Then navigate to the folder in your terminal. A
 
 **Install required packages**
 
-This package uses ```python3.8```. Other version might result in issues. Only tested on Linux.
+This package uses ```python3.8```. Other versions might result in issues. Only tested on Linux.
 
 Other required packages are:
 ```
