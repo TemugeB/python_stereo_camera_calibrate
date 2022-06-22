@@ -1,5 +1,5 @@
 # What is this?
-Stereo camera calibration script wriiten in python. Uses OpenCV primarily. 
+Stereo camera calibration script written in python. Uses OpenCV primarily. 
 
 # Why you want to stereo calibrate two cameras?
 Allows you to obtain 3D points through triangulation from two camera views.
