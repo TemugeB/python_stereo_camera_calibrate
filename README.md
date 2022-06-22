@@ -29,9 +29,9 @@ pip3 install -r requirements.txt
 
 The camera calibration settings first need to be configured in the ```calibration_settings.yaml``` file. 
 
-```camera0```: This is your primary camera. You can check available video devices on linux with ```ls /dev/video*```. You only need to put the device number.
+```camera0```: Put primary camera device_id here. You can check available video devices on linux with ```ls /dev/video*```. You only need to put the device number.
 
-```camera1```: This is the secondary camera. 
+```camera1```: Put secondary camera device_id here. 
 
 ```frame_width``` and ```frame_height```: Camera calibration is tied with the image resolution. Once this is set, your calibration result can only be used with this resolution. Also, both cameras have to have the exact same ```width``` and ```height```. If your cameras do not support the same resolution, use cv.resize() in opencv to make them same ```width``` and ```height```. This package does not check if your camera resolutions are the same or supported by your camera, and does not raise exception. It is up to you to make sure your cameras can support this resolution.
 
