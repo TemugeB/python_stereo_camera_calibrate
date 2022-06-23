@@ -63,7 +63,7 @@ The calibration procedures should take less than 10 minutes.
 
 Step1 will create ```frames``` folder and save calibration pattern frames. The number of frames saved is set by ```mono_calibration_frames```. Press SPACE when ready to save frames.
 
-Show the calibration pattern to each camera. Don't move it too far away. Also, move it around and try to cover different parts of the frame. Keep the pattern steady when the frame is taken.
+Show the calibration pattern to each camera. Don't move it too far away. When a frame is taken, move the pattern to a differnt position and try to cover different parts of the frame. Keep the pattern steady when the frame is taken.
 
 ![image](https://user-images.githubusercontent.com/36071915/175025024-cf3000a7-daba-4721-a24e-d8d4550f6f83.png)
 
