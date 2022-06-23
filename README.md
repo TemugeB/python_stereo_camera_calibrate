@@ -97,7 +97,7 @@ You should see something like this.
 
 ![image](https://user-images.githubusercontent.com/36071915/175031465-ddf0b965-4a4f-4983-b741-36f541bdf108.png)
 
-Once the code completes, rotation R and translation T are returned. A good calibration should have RMSE < 0.3. Values up to 0.5 can be acceptable. If your RMSE value is too high, make sure that when taking the paired frames, you keep your hand steady. Also make sure that the calibration pattern is not too small or too far away.
+Once the code completes, rotation R and translation T are returned. A good calibration should have RMSE < 0.3. Values up to 0.5 can be acceptable. If your RMSE value is too high, make sure that when taking the paired frames, you keep your hand steady. Also make sure that the calibration pattern is not too small or too far away. Keep repeating this step until a good RMSE value is obtained.
 
 **Step5. Obtain Stereo Calibration Extrinsic Parameters**
 
