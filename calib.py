@@ -1,4 +1,5 @@
-import cv2 as cv
+import argparse
+import cv2
 import glob
 import numpy as np
 import sys
@@ -64,7 +65,7 @@ def save_frames_single_camera(camera_name):
 
     #open video stream and change resolution.
     #Note: if unsupported resolution is used, this does NOT raise an error.
-    cap = cv.VideoCapture(camera_device_id)
+    cap = cv2.VideoCapture(camera_device_id)
     cap.set(3, width)
     cap.set(4, height)
     
@@ -80,25 +81,25 @@ def save_frames_single_camera(camera_name):
             print("No video data received from camera. Exiting...")
             quit()
 
-        frame_small = cv.resize(frame, None, fx = 1/view_resize, fy=1/view_resize)
+        frame_small = cv2.resize(frame, None, fx = 1/view_resize, fy=1/view_resize)
 
         if not start:
-            cv.putText(frame_small, "Press SPACEBAR to start collection frames", (50,50), cv.FONT_HERSHEY_COMPLEX, 1, (0,0,255), 1)
+            cv2.putText(frame_small, "Press SPACEBAR to start collection frames", (50,50), cv2.FONT_HERSHEY_COMPLEX, 1, (0,0,255), 1)
         
         if start:
             cooldown -= 1
-            cv.putText(frame_small, "Cooldown: " + str(cooldown), (50,50), cv.FONT_HERSHEY_COMPLEX, 1, (0,255,0), 1)
-            cv.putText(frame_small, "Num frames: " + str(saved_count), (50,100), cv.FONT_HERSHEY_COMPLEX, 1, (0,255,0), 1)
+            cv2.putText(frame_small, "Cooldown: " + str(cooldown), (50,50), cv2.FONT_HERSHEY_COMPLEX, 1, (0,255,0), 1)
+            cv2.putText(frame_small, "Num frames: " + str(saved_count), (50,100), cv2.FONT_HERSHEY_COMPLEX, 1, (0,255,0), 1)
             
             #save the frame when cooldown reaches 0.
             if cooldown <= 0:
                 savename = os.path.join('frames', camera_name + '_' + str(saved_count) + '.png')
-                cv.imwrite(savename, frame)
+                cv2.imwrite(savename, frame)
                 saved_count += 1
                 cooldown = cooldown_time
 
-        cv.imshow('frame_small', frame_small)
-        k = cv.waitKey(1)
+        cv2.imshow('frame_small', frame_small)
+        k = cv2.waitKey(1)
         
         if k == 27:
             #if ESC is pressed at any time, the program will exit.
@@ -111,7 +112,7 @@ def save_frames_single_camera(camera_name):
         #break out of the loop when enough number of frames have been saved
         if saved_count == number_to_save: break
 
-    cv.destroyAllWindows()
+    cv2.destroyAllWindows()
 
 
 #Calibrate single camera to obtain camera intrinsic parameters from saved frames.
@@ -119,13 +120,13 @@ def calibrate_camera_for_intrinsic_parameters(images_prefix):
     
     #NOTE: images_prefix contains camera name: "frames/camera0*".
     images_names = glob.glob(images_prefix)
-
+    #breakpoint()
     #read all frames
-    images = [cv.imread(imname, 1) for imname in images_names]
+    images = [cv2.imread(imname, 1) for imname in images_names]
 
     #criteria used by checkerboard pattern detector.
     #Change this if the code can't find the checkerboard. 
-    criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 100, 0.001)
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 100, 0.001)
 
     rows = calibration_settings['checkerboard_rows']
     columns = calibration_settings['checkerboard_columns']
@@ -148,10 +149,10 @@ def calibrate_camera_for_intrinsic_parameters(images_prefix):
 
 
     for i, frame in enumerate(images):
-        gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
         #find the checkerboard
-        ret, corners = cv.findChessboardCorners(gray, (rows, columns), None)
+        ret, corners = cv2.findChessboardCorners(gray, (rows, columns), None)
 
         if ret == True:
 
@@ -159,12 +160,12 @@ def calibrate_camera_for_intrinsic_parameters(images_prefix):
             conv_size = (11, 11)
 
             #opencv can attempt to improve the checkerboard coordinates
-            corners = cv.cornerSubPix(gray, corners, conv_size, (-1, -1), criteria)
-            cv.drawChessboardCorners(frame, (rows,columns), corners, ret)
-            cv.putText(frame, 'If detected points are poor, press "s" to skip this sample', (25, 25), cv.FONT_HERSHEY_COMPLEX, 1, (0,0,255), 1)
+            corners = cv2.cornerSubPix(gray, corners, conv_size, (-1, -1), criteria)
+            cv2.drawChessboardCorners(frame, (rows,columns), corners, ret)
+            cv2.putText(frame, 'If detected points are poor, press "s" to skip this sample', (25, 25), cv2.FONT_HERSHEY_COMPLEX, 1, (0,0,255), 1)
 
-            cv.imshow('img', frame)
-            k = cv.waitKey(0)
+            cv2.imshow('img', frame)
+            k = cv2.waitKey(0)
 
             if k & 0xFF == ord('s'):
                 print('skipping')
@@ -174,8 +175,8 @@ def calibrate_camera_for_intrinsic_parameters(images_prefix):
             imgpoints.append(corners)
 
 
-    cv.destroyAllWindows()
-    ret, cmtx, dist, rvecs, tvecs = cv.calibrateCamera(objpoints, imgpoints, (width, height), None, None)
+    cv2.destroyAllWindows()
+    ret, cmtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, (width, height), None, None)
     print('rmse:', ret)
     print('camera matrix:\n', cmtx)
     print('distortion coeffs:', dist)
@@ -217,8 +218,8 @@ def save_frames_two_cams(camera0_name, camera1_name):
     number_to_save = calibration_settings['stereo_calibration_frames']
 
     #open the video streams
-    cap0 = cv.VideoCapture(calibration_settings[camera0_name])
-    cap1 = cv.VideoCapture(calibration_settings[camera1_name])
+    cap0 = cv2.VideoCapture(calibration_settings[camera0_name])
+    cap1 = cv2.VideoCapture(calibration_settings[camera1_name])
 
     #set camera resolutions
     width = calibration_settings['frame_width']
@@ -240,35 +241,35 @@ def save_frames_two_cams(camera0_name, camera1_name):
             print('Cameras not returning video data. Exiting...')
             quit()
 
-        frame0_small = cv.resize(frame0, None, fx=1./view_resize, fy=1./view_resize)
-        frame1_small = cv.resize(frame1, None, fx=1./view_resize, fy=1./view_resize)
+        frame0_small = cv2.resize(frame0, None, fx=1./view_resize, fy=1./view_resize)
+        frame1_small = cv2.resize(frame1, None, fx=1./view_resize, fy=1./view_resize)
 
         if not start:
-            cv.putText(frame0_small, "Make sure both cameras can see the calibration pattern well", (50,50), cv.FONT_HERSHEY_COMPLEX, 1, (0,0,255), 1)
-            cv.putText(frame0_small, "Press SPACEBAR to start collection frames", (50,100), cv.FONT_HERSHEY_COMPLEX, 1, (0,0,255), 1)
+            cv2.putText(frame0_small, "Make sure both cameras can see the calibration pattern well", (50,50), cv2.FONT_HERSHEY_COMPLEX, 1, (0,0,255), 1)
+            cv2.putText(frame0_small, "Press SPACEBAR to start collection frames", (50,100), cv2.FONT_HERSHEY_COMPLEX, 1, (0,0,255), 1)
         
         if start:
             cooldown -= 1
-            cv.putText(frame0_small, "Cooldown: " + str(cooldown), (50,50), cv.FONT_HERSHEY_COMPLEX, 1, (0,255,0), 1)
-            cv.putText(frame0_small, "Num frames: " + str(saved_count), (50,100), cv.FONT_HERSHEY_COMPLEX, 1, (0,255,0), 1)
+            cv2.putText(frame0_small, "Cooldown: " + str(cooldown), (50,50), cv2.FONT_HERSHEY_COMPLEX, 1, (0,255,0), 1)
+            cv2.putText(frame0_small, "Num frames: " + str(saved_count), (50,100), cv2.FONT_HERSHEY_COMPLEX, 1, (0,255,0), 1)
             
-            cv.putText(frame1_small, "Cooldown: " + str(cooldown), (50,50), cv.FONT_HERSHEY_COMPLEX, 1, (0,255,0), 1)
-            cv.putText(frame1_small, "Num frames: " + str(saved_count), (50,100), cv.FONT_HERSHEY_COMPLEX, 1, (0,255,0), 1)
+            cv2.putText(frame1_small, "Cooldown: " + str(cooldown), (50,50), cv2.FONT_HERSHEY_COMPLEX, 1, (0,255,0), 1)
+            cv2.putText(frame1_small, "Num frames: " + str(saved_count), (50,100), cv2.FONT_HERSHEY_COMPLEX, 1, (0,255,0), 1)
 
             #save the frame when cooldown reaches 0.
             if cooldown <= 0:
                 savename = os.path.join('frames_pair', camera0_name + '_' + str(saved_count) + '.png')
-                cv.imwrite(savename, frame0)
+                cv2.imwrite(savename, frame0)
 
                 savename = os.path.join('frames_pair', camera1_name + '_' + str(saved_count) + '.png')
-                cv.imwrite(savename, frame1)
+                cv2.imwrite(savename, frame1)
 
                 saved_count += 1
                 cooldown = cooldown_time
 
-        cv.imshow('frame0_small', frame0_small)
-        cv.imshow('frame1_small', frame1_small)
-        k = cv.waitKey(1)
+        cv2.imshow('frame0_small', frame0_small)
+        cv2.imshow('frame1_small', frame1_small)
+        k = cv2.waitKey(1)
         
         if k == 27:
             #if ESC is pressed at any time, the program will exit.
@@ -281,7 +282,7 @@ def save_frames_two_cams(camera0_name, camera1_name):
         #break out of the loop when enough number of frames have been saved
         if saved_count == number_to_save: break
 
-    cv.destroyAllWindows()
+    cv2.destroyAllWindows()
 
 
 #open paired calibration frames and stereo calibrate for cam0 to cam1 coorindate transformations
@@ -291,11 +292,11 @@ def stereo_calibrate(mtx0, dist0, mtx1, dist1, frames_prefix_c0, frames_prefix_c
     c1_images_names = sorted(glob.glob(frames_prefix_c1))
 
     #open images
-    c0_images = [cv.imread(imname, 1) for imname in c0_images_names]
-    c1_images = [cv.imread(imname, 1) for imname in c1_images_names]
+    c0_images = [cv2.imread(imname, 1) for imname in c0_images_names]
+    c1_images = [cv2.imread(imname, 1) for imname in c1_images_names]
 
     #change this if stereo calibration not good.
-    criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 100, 0.001)
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 100, 0.001)
 
     #calibration pattern settings
     rows = calibration_settings['checkerboard_rows']
@@ -319,27 +320,27 @@ def stereo_calibrate(mtx0, dist0, mtx1, dist1, frames_prefix_c0, frames_prefix_c
     objpoints = [] # 3d point in real world space
 
     for frame0, frame1 in zip(c0_images, c1_images):
-        gray1 = cv.cvtColor(frame0, cv.COLOR_BGR2GRAY)
-        gray2 = cv.cvtColor(frame1, cv.COLOR_BGR2GRAY)
-        c_ret1, corners1 = cv.findChessboardCorners(gray1, (rows, columns), None)
-        c_ret2, corners2 = cv.findChessboardCorners(gray2, (rows, columns), None)
+        gray1 = cv2.cvtColor(frame0, cv2.COLOR_BGR2GRAY)
+        gray2 = cv2.cvtColor(frame1, cv2.COLOR_BGR2GRAY)
+        c_ret1, corners1 = cv2.findChessboardCorners(gray1, (rows, columns), None)
+        c_ret2, corners2 = cv2.findChessboardCorners(gray2, (rows, columns), None)
 
         if c_ret1 == True and c_ret2 == True:
 
-            corners1 = cv.cornerSubPix(gray1, corners1, (11, 11), (-1, -1), criteria)
-            corners2 = cv.cornerSubPix(gray2, corners2, (11, 11), (-1, -1), criteria)
+            corners1 = cv2.cornerSubPix(gray1, corners1, (11, 11), (-1, -1), criteria)
+            corners2 = cv2.cornerSubPix(gray2, corners2, (11, 11), (-1, -1), criteria)
 
             p0_c1 = corners1[0,0].astype(np.int32)
             p0_c2 = corners2[0,0].astype(np.int32)
 
-            cv.putText(frame0, 'O', (p0_c1[0], p0_c1[1]), cv.FONT_HERSHEY_COMPLEX, 1, (0,0,255), 1)
-            cv.drawChessboardCorners(frame0, (rows,columns), corners1, c_ret1)
-            cv.imshow('img', frame0)
+            cv2.putText(frame0, 'O', (p0_c1[0], p0_c1[1]), cv2.FONT_HERSHEY_COMPLEX, 1, (0,0,255), 1)
+            cv2.drawChessboardCorners(frame0, (rows,columns), corners1, c_ret1)
+            cv2.imshow('img', frame0)
 
-            cv.putText(frame1, 'O', (p0_c2[0], p0_c2[1]), cv.FONT_HERSHEY_COMPLEX, 1, (0,0,255), 1)
-            cv.drawChessboardCorners(frame1, (rows,columns), corners2, c_ret2)
-            cv.imshow('img2', frame1)
-            k = cv.waitKey(0)
+            cv2.putText(frame1, 'O', (p0_c2[0], p0_c2[1]), cv2.FONT_HERSHEY_COMPLEX, 1, (0,0,255), 1)
+            cv2.drawChessboardCorners(frame1, (rows,columns), corners2, c_ret2)
+            cv2.imshow('img2', frame1)
+            k = cv2.waitKey(0)
 
             if k & 0xFF == ord('s'):
                 print('skipping')
@@ -349,12 +350,12 @@ def stereo_calibrate(mtx0, dist0, mtx1, dist1, frames_prefix_c0, frames_prefix_c
             imgpoints_left.append(corners1)
             imgpoints_right.append(corners2)
 
-    stereocalibration_flags = cv.CALIB_FIX_INTRINSIC
-    ret, CM1, dist0, CM2, dist1, R, T, E, F = cv.stereoCalibrate(objpoints, imgpoints_left, imgpoints_right, mtx0, dist0,
+    stereocalibration_flags = cv2.CALIB_FIX_INTRINSIC
+    ret, CM1, dist0, CM2, dist1, R, T, E, F = cv2.stereoCalibrate(objpoints, imgpoints_left, imgpoints_right, mtx0, dist0,
                                                                  mtx1, dist1, (width, height), criteria = criteria, flags = stereocalibration_flags)
 
     print('rmse: ', ret)
-    cv.destroyAllWindows()
+    cv2.destroyAllWindows()
     return R, T
 
 #Converts Rotation matrix R and Translation vector T into a homogeneous representation matrix
@@ -394,7 +395,7 @@ def check_calibration(camera0_name, camera0_data, camera1_name, camera1_data, _z
     #increase the size of the coorindate axes and shift in the z direction
     draw_axes_points = 5 * coordinate_points + z_shift
 
-    #project 3D points to each camera view manually. This can also be done using cv.projectPoints()
+    #project 3D points to each camera view manually. This can also be done using cv2.projectPoints()
     #Note that this uses homogenous coordinate formulation
     pixel_points_camera0 = []
     pixel_points_camera1 = []
@@ -416,8 +417,8 @@ def check_calibration(camera0_name, camera0_data, camera1_name, camera1_data, _z
     pixel_points_camera1 = np.array(pixel_points_camera1)
 
     #open the video streams
-    cap0 = cv.VideoCapture(calibration_settings[camera0_name])
-    cap1 = cv.VideoCapture(calibration_settings[camera1_name])
+    cap0 = cv2.VideoCapture(calibration_settings[camera0_name])
+    cap1 = cv2.VideoCapture(calibration_settings[camera1_name])
 
     #set camera resolutions
     width = calibration_settings['frame_width']
@@ -442,25 +443,25 @@ def check_calibration(camera0_name, camera0_data, camera1_name, camera1_data, _z
         origin = tuple(pixel_points_camera0[0].astype(np.int32))
         for col, _p in zip(colors, pixel_points_camera0[1:]):
             _p = tuple(_p.astype(np.int32))
-            cv.line(frame0, origin, _p, col, 2)
+            cv2.line(frame0, origin, _p, col, 2)
         
         #draw projections to camera1
         origin = tuple(pixel_points_camera1[0].astype(np.int32))
         for col, _p in zip(colors, pixel_points_camera1[1:]):
             _p = tuple(_p.astype(np.int32))
-            cv.line(frame1, origin, _p, col, 2)
+            cv2.line(frame1, origin, _p, col, 2)
 
-        cv.imshow('frame0', frame0)
-        cv.imshow('frame1', frame1)
+        cv2.imshow('frame0', frame0)
+        cv2.imshow('frame1', frame1)
 
-        k = cv.waitKey(1)
+        k = cv2.waitKey(1)
         if k == 27: break
 
-    cv.destroyAllWindows()
+    cv2.destroyAllWindows()
 
 def get_world_space_origin(cmtx, dist, img_path):
 
-    frame = cv.imread(img_path, 1)
+    frame = cv2.imread(img_path, 1)
 
     #calibration pattern settings
     rows = calibration_settings['checkerboard_rows']
@@ -472,16 +473,16 @@ def get_world_space_origin(cmtx, dist, img_path):
     objp[:,:2] = np.mgrid[0:rows,0:columns].T.reshape(-1,2)
     objp = world_scaling* objp
 
-    gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-    ret, corners = cv.findChessboardCorners(gray, (rows, columns), None)
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    ret, corners = cv2.findChessboardCorners(gray, (rows, columns), None)
 
-    cv.drawChessboardCorners(frame, (rows,columns), corners, ret)
-    cv.putText(frame, "If you don't see detected points, try with a different image", (50,50), cv.FONT_HERSHEY_COMPLEX, 1, (0,0,255), 1)
-    cv.imshow('img', frame)
-    cv.waitKey(0)
+    cv2.drawChessboardCorners(frame, (rows,columns), corners, ret)
+    cv2.putText(frame, "If you don't see detected points, try with a different image", (50,50), cv2.FONT_HERSHEY_COMPLEX, 1, (0,0,255), 1)
+    cv2.imshow('img', frame)
+    cv2.waitKey(0)
 
-    ret, rvec, tvec = cv.solvePnP(objp, corners, cmtx, dist)
-    R, _  = cv.Rodrigues(rvec) #rvec is Rotation matrix in Rodrigues vector form
+    ret, rvec, tvec = cv2.solvePnP(objp, corners, cmtx, dist)
+    R, _  = cv2.Rodrigues(rvec) #rvec is Rotation matrix in Rodrigues vector form
 
     return R, tvec
 
@@ -490,34 +491,34 @@ def get_cam1_to_world_transforms(cmtx0, dist0, R_W0, T_W0,
                                  image_path0,
                                  image_path1):
 
-    frame0 = cv.imread(image_path0, 1)
-    frame1 = cv.imread(image_path1, 1)
+    frame0 = cv2.imread(image_path0, 1)
+    frame1 = cv2.imread(image_path1, 1)
 
     unitv_points = 5 * np.array([[0,0,0], [1,0,0], [0,1,0], [0,0,1]], dtype = 'float32').reshape((4,1,3))
     #axes colors are RGB format to indicate XYZ axes.
     colors = [(0,0,255), (0,255,0), (255,0,0)]
 
     #project origin points to frame 0
-    points, _ = cv.projectPoints(unitv_points, R_W0, T_W0, cmtx0, dist0)
+    points, _ = cv2.projectPoints(unitv_points, R_W0, T_W0, cmtx0, dist0)
     points = points.reshape((4,2)).astype(np.int32)
     origin = tuple(points[0])
     for col, _p in zip(colors, points[1:]):
         _p = tuple(_p.astype(np.int32))
-        cv.line(frame0, origin, _p, col, 2)
+        cv2.line(frame0, origin, _p, col, 2)
 
     #project origin points to frame1
     R_W1 = R_01 @ R_W0
     T_W1 = R_01 @ T_W0 + T_01
-    points, _ = cv.projectPoints(unitv_points, R_W1, T_W1, cmtx1, dist1)
+    points, _ = cv2.projectPoints(unitv_points, R_W1, T_W1, cmtx1, dist1)
     points = points.reshape((4,2)).astype(np.int32)
     origin = tuple(points[0])
     for col, _p in zip(colors, points[1:]):
         _p = tuple(_p.astype(np.int32))
-        cv.line(frame1, origin, _p, col, 2)
+        cv2.line(frame1, origin, _p, col, 2)
 
-    cv.imshow('frame0', frame0)
-    cv.imshow('frame1', frame1)
-    cv.waitKey(0)
+    cv2.imshow('frame0', frame0)
+    cv2.imshow('frame1', frame1)
+    cv2.waitKey(0)
 
     return R_W1, T_W1
 
@@ -563,49 +564,151 @@ def save_extrinsic_calibration_parameters(R0, T0, R1, T1, prefix = ''):
 
     return R0, T0, R1, T1
 
-if __name__ == '__main__':
+def read_camera_parameters(camera_name):
+    inf = open(os.path.join('camera_parameters' , str(camera_name) + '_intrinsics.dat'), 'r')
+    cmtx = []
+    dist = []
 
-    if len(sys.argv) != 2:
-        print('Call with settings filename: "python3 calibrate.py calibration_settings.yaml"')
-        quit()
+    line = inf.readline()
+    for _ in range(3):
+        line = inf.readline().split()
+        line = [float(en) for en in line]
+        cmtx.append(line)
+
+    line = inf.readline()
+    line = inf.readline().split()
+    line = [float(en) for en in line]
+    dist.append(line)
+
+    return np.array(cmtx), np.array(dist)
+
+def read_rotation_translation(camera_name, savefolder = 'camera_parameters/'):
+    inf = open(os.path.join(savefolder , str(camera_name) + '_rot_trans.dat'), 'r')
+
+    inf.readline()
+    rot = []
+    trans = []
+    for _ in range(3):
+        line = inf.readline().split()
+        line = [float(en) for en in line]
+        rot.append(line)
+
+    inf.readline()
+    for _ in range(3):
+        line = inf.readline().split()
+        line = [float(en) for en in line]
+        trans.append(line)
+
+    inf.close()
+    return np.array(rot), np.array(trans)
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-cp",
+        "--calib_path",
+        type=str,
+        default="calibration_settings.yaml",
+        help="calibration file path",
+    )
+    parser.add_argument(
+        "-s0",
+        "--save_single_0",
+        default=False,
+        nargs="?",
+        const=True,
+        help="To save frames of single cam-0",
+    )
+    parser.add_argument(
+        "-s1",
+        "--save_single_1",
+        default=False,
+        nargs="?",
+        const=True,
+        help="To save frames of single cam-1",
+    )
+    parser.add_argument(
+        "-c0",
+        "--calibrate0",
+        default=False,
+        nargs="?",
+        const=True,
+        help="To calibrate single cam-0",
+    )
+    parser.add_argument(
+        "-c1",
+        "--calibrate1",
+        default=False,
+        nargs="?",
+        const=True,
+        help="To calibrate single cam-1",
+    )
+    parser.add_argument(
+        "-cs",
+        "--calibsterio",
+        default=False,
+        nargs="?",
+        const=True,
+        help="To calibrate sterio pair",
+    )
+    parser.add_argument(
+        "-st",
+        "--save_sterio",
+        default=False,
+        nargs="?",
+        const=True,
+        help="To save frames of sterio pair",
+    )
+    args = parser.parse_args()
     
     #Open and parse the settings file
-    parse_calibration_settings_file(sys.argv[1])
+    parse_calibration_settings_file(args.calib_path)
 
 
     """Step1. Save calibration frames for single cameras"""
-    save_frames_single_camera('camera0') #save frames for camera0
-    save_frames_single_camera('camera1') #save frames for camera1
+    if args.save_single_0:
+        save_frames_single_camera('camera0') #save frames for camera0
+    if args.save_single_1:
+        save_frames_single_camera('camera1') #save frames for camera1
 
 
     """Step2. Obtain camera intrinsic matrices and save them"""
     #camera0 intrinsics
-    images_prefix = os.path.join('frames', 'camera0*')
-    cmtx0, dist0 = calibrate_camera_for_intrinsic_parameters(images_prefix) 
-    save_camera_intrinsics(cmtx0, dist0, 'camera0') #this will write cmtx and dist to disk
+    if args.calibrate0:
+        images_prefix = os.path.join('frames', 'camera0*')
+        cmtx0, dist0 = calibrate_camera_for_intrinsic_parameters(images_prefix) 
+        save_camera_intrinsics(cmtx0, dist0, 'camera0') #this will write cmtx and dist to disk
+    cmtx0, dist0 = read_camera_parameters('camera0')
     #camera1 intrinsics
-    images_prefix = os.path.join('frames', 'camera1*')
-    cmtx1, dist1 = calibrate_camera_for_intrinsic_parameters(images_prefix)
-    save_camera_intrinsics(cmtx1, dist1, 'camera1') #this will write cmtx and dist to disk
-
+    if args.calibrate1:
+        images_prefix = os.path.join('frames', 'camera1*')
+        cmtx1, dist1 = calibrate_camera_for_intrinsic_parameters(images_prefix)
+        save_camera_intrinsics(cmtx1, dist1, 'camera1') #this will write cmtx and dist to disk
+    cmtx1, dist1 = read_camera_parameters('camera1')
 
     """Step3. Save calibration frames for both cameras simultaneously"""
-    save_frames_two_cams('camera0', 'camera1') #save simultaneous frames
+    if args.save_sterio:
+        save_frames_two_cams('camera0', 'camera1') #save simultaneous frames
 
 
     """Step4. Use paired calibration pattern frames to obtain camera0 to camera1 rotation and translation"""
-    frames_prefix_c0 = os.path.join('frames_pair', 'camera0*')
-    frames_prefix_c1 = os.path.join('frames_pair', 'camera1*')
-    R, T = stereo_calibrate(cmtx0, dist0, cmtx1, dist1, frames_prefix_c0, frames_prefix_c1)
+    if args.calibsterio:
+        frames_prefix_c0 = os.path.join('frames_pair', 'camera0*')
+        frames_prefix_c1 = os.path.join('frames_pair', 'camera1*')
+        R, T = stereo_calibrate(cmtx0, dist0, cmtx1, dist1, frames_prefix_c0, frames_prefix_c1)
 
 
-    """Step5. Save calibration data where camera0 defines the world space origin."""
-    #camera0 rotation and translation is identity matrix and zeros vector
-    R0 = np.eye(3, dtype=np.float32)
-    T0 = np.array([0., 0., 0.]).reshape((3, 1))
+        """Step5. Save calibration data where camera0 defines the world space origin."""
+        #camera0 rotation and translation is identity matrix and zeros vector
+        R0 = np.eye(3, dtype=np.float32)
+        T0 = np.array([0., 0., 0.]).reshape((3, 1))
 
-    save_extrinsic_calibration_parameters(R0, T0, R, T) #this will write R and T to disk
-    R1 = R; T1 = T #to avoid confusion, camera1 R and T are labeled R1 and T1
+        R1 = R; T1 = T #to avoid confusion, camera1 R and T are labeled R1 and T1
+
+        save_extrinsic_calibration_parameters(R0, T0, R1, T1) #this will write R and T to disk
+    R0, T0 = read_rotation_translation('camera0')
+    R1, T1 = read_rotation_translation('camera1')
+    
     #check your calibration makes sense
     camera0_data = [cmtx0, dist0, R0, T0]
     camera1_data = [cmtx1, dist1, R1, T1]
